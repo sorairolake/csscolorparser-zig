@@ -1,0 +1,11 @@
+// SPDX-FileCopyrightText: 2025 Shun Sakai
+//
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
+.{
+    .name = .csscolorparser,
+    .version = "0.1.0",
+    .fingerprint = 0xca2c5cca2bb1da44,
+    .minimum_zig_version = "0.14.0",
+    .paths = .{ "build.zig", "build.zig.zon", "LICENSES", "README.md", "src" },
+}
