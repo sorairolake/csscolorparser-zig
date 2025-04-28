@@ -9,12 +9,10 @@ const std = @import("std");
 
 const named_colors = @import("named_colors.zig");
 
-const ArrayList = std.ArrayList;
 const ascii = std.ascii;
 const fmt = std.fmt;
 const BufPrintError = fmt.BufPrintError;
 const Case = fmt.Case;
-const heap = std.heap;
 const math = std.math;
 const mem = std.mem;
 const testing = std.testing;
@@ -401,12 +399,14 @@ pub fn Color(comptime T: type) type {
                     const s = lower[(i + 1)..(lower.len - 1)];
                     mem.replaceScalar(u8, s, ',', ' ');
                     mem.replaceScalar(u8, s, '/', ' ');
-                    var params_list = try ArrayList([]const u8)
-                        .initCapacity(heap.page_allocator, 4);
-                    errdefer params_list.deinit();
                     var iter = mem.tokenizeAny(u8, s, &ascii.whitespace);
-                    while (iter.next()) |param| try params_list.append(param);
-                    const params = try params_list.toOwnedSlice();
+                    var params_list = mem.zeroes([5][]const u8);
+                    var j: u3 = 0;
+                    while (iter.next()) |param| : (j += 1) {
+                        if (j >= params_list.len) break;
+                        params_list[j] = param;
+                    }
+                    const params = params_list[0..j];
                     const params_len = params.len;
 
                     if (mem.eql(u8, fn_name, "rgb") or mem.eql(u8, fn_name, "rgba")) {
