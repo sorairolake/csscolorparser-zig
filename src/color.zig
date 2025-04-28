@@ -65,12 +65,10 @@ pub fn Color(comptime T: type) type {
 
         test init {
             const color = Color(f64).init(1.23, 0.5, -0.01, 1.01);
-            try testing.expectEqualSlices(f64, &[4]f64{ 1.0, 0.5, 0.0, 1.0 }, &[4]f64{
-                color.red,
-                color.green,
-                color.blue,
-                color.alpha,
-            });
+            try testing.expectEqual(
+                .{ 1.0, 0.5, 0.0, 1.0 },
+                .{ color.red, color.green, color.blue, color.alpha },
+            );
         }
 
         /// Restricts the values to the valid range.
@@ -84,12 +82,10 @@ pub fn Color(comptime T: type) type {
         test clamp {
             var color = Color(f64){ .red = 1.23, .green = 0.5, .blue = -0.01, .alpha = 1.01 };
             color.clamp();
-            try testing.expectEqualSlices(f64, &[4]f64{ 1.0, 0.5, 0.0, 1.0 }, &[4]f64{
-                color.red,
-                color.green,
-                color.blue,
-                color.alpha,
-            });
+            try testing.expectEqual(
+                .{ 1.0, 0.5, 0.0, 1.0 },
+                .{ color.red, color.green, color.blue, color.alpha },
+            );
         }
 
         /// Creates a `Color` from
@@ -106,7 +102,7 @@ pub fn Color(comptime T: type) type {
 
         test fromRgba8 {
             const color = Color(f64).fromRgba8(255, 0, 0, 255);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from linear-light RGB values.
@@ -129,7 +125,7 @@ pub fn Color(comptime T: type) type {
 
         test fromLinearRgb {
             const color = Color(f64).fromLinearRgb(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -146,7 +142,7 @@ pub fn Color(comptime T: type) type {
 
         test fromHsl {
             const color = Color(f64).fromHsl(360.0, 1.0, 0.5, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -177,7 +173,7 @@ pub fn Color(comptime T: type) type {
 
         test fromHwb {
             const color = Color(f64).fromHwb(0.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -201,7 +197,7 @@ pub fn Color(comptime T: type) type {
                 0.125_802_870_124_518_02,
                 1.0,
             );
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -272,20 +268,23 @@ pub fn Color(comptime T: type) type {
 
                 test "parsePercentOrFloat" {
                     {
-                        const test_data = [_]struct { []const u8, struct { f64, bool } }{
-                            .{ "0%", .{ 0.0, true } },
-                            .{ "100%", .{ 1.0, true } },
-                            .{ "50%", .{ 0.5, true } },
-                            .{ "0", .{ 0.0, false } },
-                            .{ "1", .{ 1.0, false } },
-                            .{ "0.5", .{ 0.5, false } },
-                            .{ "100.0", .{ 100.0, false } },
-                            .{ "-23.7", .{ -23.7, false } },
-                        };
-                        for (test_data) |td| {
-                            const v = @This().parsePercentOrFloat(td[0]).?;
-                            try testing.expectEqual(td[1][0], v[0]);
-                            try testing.expectEqual(td[1][1], v[1]);
+                        const float_types = [_]type{f64};
+                        inline for (float_types) |ft| {
+                            const test_data = [_]struct { []const u8, struct { ft, bool } }{
+                                .{ "0%", .{ 0.0, true } },
+                                .{ "100%", .{ 1.0, true } },
+                                .{ "50%", .{ 0.5, true } },
+                                .{ "0", .{ 0.0, false } },
+                                .{ "1", .{ 1.0, false } },
+                                .{ "0.5", .{ 0.5, false } },
+                                .{ "100.0", .{ 100.0, false } },
+                                .{ "-23.7", .{ -23.7, false } },
+                            };
+                            for (test_data) |td| {
+                                const v = @This().parsePercentOrFloat(td[0]).?;
+                                try testing.expectEqual(td[1][0], v[0]);
+                                try testing.expectEqual(td[1][1], v[1]);
+                            }
                         }
                     }
                     {
@@ -309,19 +308,22 @@ pub fn Color(comptime T: type) type {
 
                 test "parsePercentOr255" {
                     {
-                        const test_data = [_]struct { []const u8, struct { f64, bool } }{
-                            .{ "0%", .{ 0.0, true } },
-                            .{ "100%", .{ 1.0, true } },
-                            .{ "50%", .{ 0.5, true } },
-                            .{ "-100%", .{ -1.0, true } },
-                            .{ "0", .{ 0.0, false } },
-                            .{ "255", .{ 1.0, false } },
-                            .{ "127.5", .{ 0.5, false } },
-                        };
-                        for (test_data) |td| {
-                            const v = @This().parsePercentOr255(td[0]).?;
-                            try testing.expectEqual(td[1][0], v[0]);
-                            try testing.expectEqual(td[1][1], v[1]);
+                        const float_types = [_]type{ f16, f32, f64, f80, f128 };
+                        inline for (float_types) |ft| {
+                            const test_data = [_]struct { []const u8, struct { ft, bool } }{
+                                .{ "0%", .{ 0.0, true } },
+                                .{ "100%", .{ 1.0, true } },
+                                .{ "50%", .{ 0.5, true } },
+                                .{ "-100%", .{ -1.0, true } },
+                                .{ "0", .{ 0.0, false } },
+                                .{ "255", .{ 1.0, false } },
+                                .{ "127.5", .{ 0.5, false } },
+                            };
+                            for (test_data) |td| {
+                                const v = @This().parsePercentOr255(td[0]).?;
+                                try testing.expectEqual(td[1][0], v[0]);
+                                try testing.expectEqual(td[1][1], v[1]);
+                            }
                         }
                     }
                     {
@@ -354,20 +356,23 @@ pub fn Color(comptime T: type) type {
 
                 test "parseAngle" {
                     {
-                        const test_data = [_]struct { []const u8, f64 }{
-                            .{ "360", 360.0 },
-                            .{ "127.356", 127.356 },
-                            .{ "+120deg", 120.0 },
-                            .{ "90deg", 90.0 },
-                            .{ "-127deg", -127.0 },
-                            .{ "100grad", 90.0 },
-                            .{ "1.5707963267948966rad", 90.0 },
-                            .{ "0.25turn", 90.0 },
-                            .{ "-0.25turn", -90.0 },
-                        };
-                        for (test_data) |td| {
-                            const v = @This().parseAngle(td[0]).?;
-                            try testing.expectEqual(td[1], v);
+                        const float_types = [_]type{f64};
+                        inline for (float_types) |ft| {
+                            const test_data = [_]struct { []const u8, ft }{
+                                .{ "360", 360.0 },
+                                .{ "127.356", 127.356 },
+                                .{ "+120deg", 120.0 },
+                                .{ "90deg", 90.0 },
+                                .{ "-127deg", -127.0 },
+                                .{ "100grad", 90.0 },
+                                .{ "1.5707963267948966rad", 90.0 },
+                                .{ "0.25turn", 90.0 },
+                                .{ "-0.25turn", -90.0 },
+                            };
+                            for (test_data) |td| {
+                                const v = @This().parseAngle(td[0]).?;
+                                try testing.expectEqual(td[1], v);
+                            }
                         }
                     }
                     {
@@ -532,12 +537,11 @@ pub fn Color(comptime T: type) type {
 
         test parse {
             const color = try Color(f64).parse("#ff0");
-            try testing.expectEqualSlices(
-                f64,
-                &[4]f64{ 1.0, 1.0, 0.0, 1.0 },
-                &[4]f64{ color.red, color.green, color.blue, color.alpha },
+            try testing.expectEqual(
+                .{ 1.0, 1.0, 0.0, 1.0 },
+                .{ color.red, color.green, color.blue, color.alpha },
             );
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 255, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 255, 0, 255 }, color.toRgba8());
             var buf: [7]u8 = undefined;
             const hex = try color.toHexString(&buf);
             try testing.expectEqualStrings("#ffff00", hex);
@@ -573,7 +577,7 @@ pub fn Color(comptime T: type) type {
 
         test toRgba8 {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Returns an array of linear-light RGB values.
@@ -593,7 +597,7 @@ pub fn Color(comptime T: type) type {
 
         test toLinearRgb {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(f64, &[4]f64{ 1.0, 0.0, 0.0, 1.0 }, &color.toLinearRgb());
+            try testing.expectEqual(.{ 1.0, 0.0, 0.0, 1.0 }, color.toLinearRgb());
         }
 
         /// Returns an array of
@@ -606,7 +610,7 @@ pub fn Color(comptime T: type) type {
 
         test toHsl {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(f64, &[4]f64{ 0.0, 1.0, 0.5, 1.0 }, &color.toHsl());
+            try testing.expectEqual(.{ 0.0, 1.0, 0.5, 1.0 }, color.toHsl());
         }
 
         /// Returns an array of
@@ -627,7 +631,7 @@ pub fn Color(comptime T: type) type {
 
         test toHwb {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(f64, &[4]f64{ 0.0, 0.0, 0.0, 1.0 }, &color.toHwb());
+            try testing.expectEqual(.{ 0.0, 0.0, 0.0, 1.0 }, color.toHwb());
         }
 
         /// Returns an array of
@@ -725,17 +729,20 @@ pub fn Color(comptime T: type) type {
 }
 
 test "normalizeAngle" {
-    const data = [_][2]f64{
-        .{ 0.0, 0.0 },
-        .{ 360.0, 0.0 },
-        .{ 400.0, 40.0 },
-        .{ 1155.0, 75.0 },
-        .{ -360.0, 0.0 },
-        .{ -90.0, 270.0 },
-        .{ -765.0, 315.0 },
-    };
-    for (data) |d| {
-        const c = Color(f64).normalizeAngle(d[0]);
-        try testing.expectEqual(d[1], c);
+    const float_types = [_]type{ f16, f32, f64, f80, f128 };
+    inline for (float_types) |ft| {
+        const data = [_][2]ft{
+            .{ 0.0, 0.0 },
+            .{ 360.0, 0.0 },
+            .{ 400.0, 40.0 },
+            .{ 1155.0, 75.0 },
+            .{ -360.0, 0.0 },
+            .{ -90.0, 270.0 },
+            .{ -765.0, 315.0 },
+        };
+        for (data) |d| {
+            const c = Color(ft).normalizeAngle(d[0]);
+            try testing.expectEqual(d[1], c);
+        }
     }
 }

@@ -8,7 +8,8 @@ const testing = @import("std").testing;
 const Color = @import("csscolorparser").Color;
 
 test "random colors" {
-    // The color string is randomly generated, then parsed using Chromium 87.0.4280.66.
+    // The color string is randomly generated, then parsed using Chromium
+    // 87.0.4280.66.
     const test_data = [_]struct { []const u8, [4]u8 }{
         .{ "#9F2", .{ 153, 255, 34, 255 } },
         .{ "#919211", .{ 145, 146, 17, 255 } },
@@ -211,8 +212,11 @@ test "random colors" {
         .{ "hsl(41.239,30.040%,7.348%)", .{ 24, 21, 13, 255 } },
         .{ "hsl(5.794rad,109.895%,71.423%)", .{ 255, 109, 177, 255 } },
     };
-    for (test_data) |td| {
-        const c = try Color(f64).parse(td[0]);
-        try testing.expectEqualSlices(u8, &td[1], &c.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (test_data) |td| {
+            const c = try Color(ft).parse(td[0]);
+            try testing.expectEqual(td[1], c.toRgba8());
+        }
     }
 }

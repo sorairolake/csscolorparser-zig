@@ -8,7 +8,8 @@ const testing = @import("std").testing;
 const Color = @import("csscolorparser").Color;
 
 test "random colors" {
-    // The color string is randomly generated, then parsed using Mozilla Firefox 84.0.2.
+    // The color string is randomly generated, then parsed using Mozilla
+    // Firefox 84.0.2.
     const test_data = [_]struct { []const u8, [4]u8 }{
         .{ "#30758CE9", .{ 48, 117, 140, 233 } },
         .{ "#91F76A89", .{ 145, 247, 106, 137 } },
@@ -261,8 +262,11 @@ test "random colors" {
         .{ "hwb(37.442 2.103% 9.857%)", .{ 230, 145, 5, 255 } },
         .{ "hwb(135.379grad 5.905% 8.483% / 76%)", .{ 15, 233, 22, 194 } },
     };
-    for (test_data) |td| {
-        const c = try Color(f64).parse(td[0]);
-        try testing.expectEqualSlices(u8, &td[1], &c.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (test_data) |td| {
+            const c = try Color(ft).parse(td[0]);
+            try testing.expectEqual(td[1], c.toRgba8());
+        }
     }
 }
