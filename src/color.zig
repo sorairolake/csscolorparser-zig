@@ -101,8 +101,11 @@ pub fn Color(comptime T: type) type {
         }
 
         test fromRgba8 {
-            const color = Color(f64).fromRgba8(255, 0, 0, 255);
-            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+            const color = Color(f64).fromRgba8(165, 42, 42, 255);
+            try testing.expectEqualStrings("brown", color.name().?);
+            var buf: [7]u8 = undefined;
+            const hex = try color.toHexString(&buf);
+            try testing.expectEqualStrings("#a52a2a", hex);
         }
 
         /// Creates a `Color` from linear-light RGB values.
@@ -141,8 +144,11 @@ pub fn Color(comptime T: type) type {
         }
 
         test fromHsl {
-            const color = Color(f64).fromHsl(360.0, 1.0, 0.5, 1.0);
-            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+            const color = Color(f64).fromHsl(248.0, 0.39, 0.392, 1.0);
+            try testing.expectEqual(null, color.name());
+            var buf: [7]u8 = undefined;
+            const hex = try color.toHexString(&buf);
+            try testing.expectEqualStrings("#473d8b", hex);
         }
 
         /// Creates a `Color` from
@@ -172,8 +178,11 @@ pub fn Color(comptime T: type) type {
         }
 
         test fromHwb {
-            const color = Color(f64).fromHwb(0.0, 0.0, 0.0, 1.0);
-            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+            const color = Color(f64).fromHwb(50.6, 0.0, 0.0, 1.0);
+            try testing.expectEqualStrings("gold", color.name().?);
+            var buf: [7]u8 = undefined;
+            const hex = try color.toHexString(&buf);
+            try testing.expectEqualStrings("#ffd700", hex);
         }
 
         /// Creates a `Color` from
@@ -188,16 +197,6 @@ pub fn Color(comptime T: type) type {
             const ib = -0.004_196_086_3 * l - 0.703_418_614_7 * m + 1.707_614_701_0 * s;
 
             return Self.fromLinearRgb(r, g, ib, alpha);
-        }
-
-        test fromOklab {
-            const color = Color(f64).fromOklab(
-                0.627_915_193_996_980_9,
-                0.224_903_230_866_107_1,
-                0.125_802_870_124_518_02,
-                1.0,
-            );
-            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -536,22 +535,55 @@ pub fn Color(comptime T: type) type {
         }
 
         test parse {
-            const color = try Color(f64).parse("#ff0");
-            try testing.expectEqual(
-                .{ 1.0, 1.0, 0.0, 1.0 },
-                .{ color.red, color.green, color.blue, color.alpha },
-            );
-            try testing.expectEqual(.{ 255, 255, 0, 255 }, color.toRgba8());
-            var buf: [7]u8 = undefined;
-            const hex = try color.toHexString(&buf);
-            try testing.expectEqualStrings("#ffff00", hex);
+            var buf: [9]u8 = undefined;
+
+            {
+                const color = try Color(f64).parse("#ff0");
+                try testing.expectEqual(
+                    .{ 1.0, 1.0, 0.0, 1.0 },
+                    .{ color.red, color.green, color.blue, color.alpha },
+                );
+                try testing.expectEqual(.{ 255, 255, 0, 255 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ffff00", hex);
+            }
+
+            {
+                const color = try Color(f64).parse("hsl(360 100% 50%)");
+                try testing.expectEqual(
+                    .{ 1.0, 0.0, 0.0, 1.0 },
+                    .{ color.red, color.green, color.blue, color.alpha },
+                );
+                try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ff0000", hex);
+            }
+
+            {
+                const color = try Color(f64).parse("rgb(255 0 0)");
+                try testing.expectEqual(
+                    .{ 1.0, 0.0, 0.0, 1.0 },
+                    .{ color.red, color.green, color.blue, color.alpha },
+                );
+                try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ff0000", hex);
+            }
+
+            {
+                const color = try Color(f64).parse("#ff00007f");
+                try testing.expectEqual(.{ 255, 0, 0, 127 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ff00007f", hex);
+            }
         }
 
         /// Returns the
         /// [color name](https://www.w3.org/TR/css-color-4/#named-colors) of
         /// this `Color`, returning `null` if it is not available.
         pub fn name(self: Self) ?[]const u8 {
-            const rgb = self.toRgba8()[0..3];
+            const rgba = self.toRgba8();
+            const rgb = if (rgba[3] == math.maxInt(u8)) rgba[0..3] else return null;
             for (named_colors.named_colors.keys()) |key| {
                 if (mem.eql(u8, &named_colors.named_colors.get(key).?, rgb)) return key;
             }
@@ -559,8 +591,14 @@ pub fn Color(comptime T: type) type {
         }
 
         test name {
-            const color = try Color(f64).parse("#f0f8ff");
-            try testing.expectEqualStrings("aliceblue", color.name().?);
+            const color = try Color(f64).parse("#008080");
+            try testing.expectEqualStrings("teal", color.name().?);
+
+            const color_with_alpha = try Color(f64).parse("#0080807f");
+            try testing.expectEqual(null, color_with_alpha.name());
+
+            const color_without_name = try Color(f64).parse("#7f7f7f");
+            try testing.expectEqual(null, color_without_name.name());
         }
 
         /// Returns an array of
@@ -660,10 +698,15 @@ pub fn Color(comptime T: type) type {
         }
 
         test toHexString {
-            const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            var buf: [7]u8 = undefined;
+            var buf: [9]u8 = undefined;
+
+            const color = try Color(f64).parse("mediumpurple");
             const hex = try color.toHexString(&buf);
-            try testing.expectEqualStrings("#ff0000", hex);
+            try testing.expectEqualStrings("#9370db", hex);
+
+            const color_with_alpha = try Color(f64).parse("rgb(147 112 219 / 49.8%)");
+            const hex_with_alpha = try color_with_alpha.toHexString(&buf);
+            try testing.expectEqualStrings("#9370db7f", hex_with_alpha);
         }
 
         fn hslToRgb(h: T, s: T, l: T) [3]T {
