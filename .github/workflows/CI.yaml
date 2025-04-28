@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2025 Shun Sakai
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "develop"
+      - "master"
+  schedule:
+    - cron: "0 0 * * 0"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os-alias:
+          - ubuntu
+          - macos
+          - windows
+        include:
+          - os-alias: ubuntu
+            os: ubuntu-24.04
+          - os-alias: macos
+            os: macos-14
+          - os-alias: windows
+            os: windows-2022
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Zig environment
+        uses: goto-bus-stop/setup-zig@v2.2.1
+        with:
+          version: 0.14.0
+      - name: Build a project
+        run: zig build --summary all
+      - name: Build examples
+        run: zig build example --summary all
+      - name: Run tests
+        run: zig build test --summary all
+
+  fmt:
+    name: Format
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Zig environment
+        uses: goto-bus-stop/setup-zig@v2.2.1
+        with:
+          version: 0.14.0
+      - name: Check code formatted
+        run: zig fmt --check .
