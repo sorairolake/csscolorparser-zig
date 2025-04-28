@@ -6,13 +6,12 @@
 //! defined in the W3C's
 //! [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/).
 
-const std = @import("std");
-const testing = std.testing;
+pub const Color = @import("color.zig").Color;
+pub const ParseColorError = @import("errors.zig").ParseColorError;
+pub const named_colors = @import("named_colors.zig").named_colors;
 
-pub export fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
+test {
+    const testing = @import("std").testing;
 
-test "basic add functionality" {
-    try testing.expect(add(3, 7) == 10);
+    testing.refAllDeclsRecursive(@This());
 }
