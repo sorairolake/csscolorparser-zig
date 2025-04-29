@@ -161,3 +161,12 @@ pub const named_colors = StaticStringMap([3]u8).initComptime(.{
     .{ "yellow", .{ 255, 255, 0 } },
     .{ "yellowgreen", .{ 154, 205, 50 } },
 });
+
+test "length of named_colors" {
+    const testing = std.testing;
+
+    const keys_len = named_colors.keys().len;
+    try testing.expectEqual(148, keys_len);
+    const values_len = named_colors.values().len;
+    try testing.expectEqual(148, values_len);
+}
