@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2025 Shun Sakai
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+name: Deployment
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Setup Zig environment
+        uses: goto-bus-stop/setup-zig@v2.2.1
+        with:
+          version: 0.14.0
+      - name: Build the documentation
+        run: zig build doc --summary all
+      - name: Minify the documentation
+        uses: docker://tdewolff/minify:latest
+        with:
+          args: -o zig-out/doc/csscolorparser/ -r zig-out/doc/csscolorparser/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: zig-out/doc/csscolorparser
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
