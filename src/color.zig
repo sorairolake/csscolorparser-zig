@@ -22,35 +22,40 @@ const ParseColorError = @import("errors.zig").ParseColorError;
 /// This type represents a CSS color defined in the W3C's
 /// [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/).
 ///
-/// The type of `T` must be a floating-point type.
+/// The type of `T` must be a floating-point type such as `f32` or `f64`.
 pub fn Color(comptime T: type) type {
     if (@typeInfo(T) != .float)
         @compileError("`" ++ @typeName(T) ++ "` is not a floating-point type");
 
     return struct {
-        /// The red component.
+        /// The red component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents the minimum value and 100% represents the maximum value.
         red: T = 0.0,
 
-        /// The green component.
+        /// The green component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents the minimum value and 100% represents the maximum value.
         green: T = 0.0,
 
-        /// The blue component.
+        /// The blue component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents the minimum value and 100% represents the maximum value.
         blue: T = 0.0,
 
-        /// The alpha component.
+        /// The alpha component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents a fully transparent color and 100% represents a fully
+        /// opaque color.
         alpha: T = 1.0,
 
         const Self = @This();
 
-        /// Creates a new CSS color with the given components.
+        /// Creates a new CSS color with the given components of the color.
         ///
         /// If the value is out of range, this method restricts it to the valid
         /// range.
