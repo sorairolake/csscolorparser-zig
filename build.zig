@@ -8,7 +8,10 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib_mod = b.addModule("csscolorparser", .{ .root_source_file = b.path("src/root.zig") });
+    const csscolorparser_mod = b.addModule(
+        "csscolorparser",
+        .{ .root_source_file = b.path("src/root.zig") },
+    );
 
     const unit_test_step = b.step("unit-test", "Run only the unit tests");
     const unit_tests = b.addTest(.{
@@ -25,7 +28,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    integration_tests.root_module.addImport("csscolorparser", lib_mod);
+    integration_tests.root_module.addImport("csscolorparser", csscolorparser_mod);
     const run_integration_tests = b.addRunArtifact(integration_tests);
     integration_test_step.dependOn(&run_integration_tests.step);
 
@@ -56,7 +59,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
         });
-        example.root_module.addImport("csscolorparser", lib_mod);
+        example.root_module.addImport("csscolorparser", csscolorparser_mod);
         const install_example = b.addInstallArtifact(example, .{});
         example_step.dependOn(&example.step);
         example_step.dependOn(&install_example.step);
