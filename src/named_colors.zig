@@ -9,8 +9,9 @@ const std = @import("std");
 
 const StaticStringMap = std.StaticStringMap;
 
-/// CSS's named colors defined in the W3C's
-/// [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/#named-colors).
+/// CSS's [named colors](https://www.w3.org/TR/css-color-4/#named-colors)
+/// defined in the W3C's
+/// [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/).
 pub const named_colors = StaticStringMap([3]u8).initComptime(.{
     .{ "aliceblue", .{ 240, 248, 255 } },
     .{ "antiquewhite", .{ 250, 235, 215 } },

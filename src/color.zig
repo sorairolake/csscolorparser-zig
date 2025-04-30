@@ -692,7 +692,7 @@ pub fn Color(comptime T: type) type {
 
         /// Returns the
         /// [RGB hexadecimal color string](https://www.w3.org/TR/css-color-4/#hex-notation)
-        /// of this `Color`.
+        /// of this `Color` in lower case.
         pub fn toHexString(self: Self, buf: []u8) BufPrintError![]u8 {
             const r, const g, const b, const a = self.toRgba8();
 
