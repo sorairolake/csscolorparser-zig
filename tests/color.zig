@@ -197,8 +197,7 @@ test "red" {
                 1.0,
             ),
         };
-        for (data) |c| {
+        for (data) |c|
             try testing.expectEqual(.{ 255, 0, 0, 255 }, c.toRgba8());
-        }
     }
 }

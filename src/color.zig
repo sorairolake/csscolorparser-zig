@@ -221,9 +221,9 @@ pub fn Color(comptime T: type) type {
                             return (n << 4) | n;
                         }
                     };
-                    for (s) |c| {
-                        if (!ascii.isAscii(c)) return error.InvalidHex;
-                    }
+                    for (s) |c|
+                        if (!ascii.isAscii(c))
+                            return error.InvalidHex;
 
                     const n = s.len;
 
@@ -340,9 +340,8 @@ pub fn Color(comptime T: type) type {
                 }
 
                 pub fn parseAngle(s: []const u8) ?T {
-                    if (ascii.endsWithIgnoreCase(s, "deg")) {
+                    if (ascii.endsWithIgnoreCase(s, "deg"))
                         return fmt.parseFloat(T, s[0..(s.len - 3)]) catch null;
-                    }
                     if (ascii.endsWithIgnoreCase(s, "grad")) {
                         const t = fmt.parseFloat(T, s[0..(s.len - 4)]) catch return null;
                         return t * 360.0 / 400.0;
@@ -395,12 +394,14 @@ pub fn Color(comptime T: type) type {
             var buf: [1 << 8]u8 = undefined;
             const lower = ascii.lowerString(&buf, mem.trim(u8, str, &ascii.whitespace));
 
-            if (mem.eql(u8, lower, "transparent")) return Self.init(0.0, 0.0, 0.0, 0.0);
+            if (mem.eql(u8, lower, "transparent"))
+                return Self.init(0.0, 0.0, 0.0, 0.0);
 
             if (named_colors.named_colors.get(lower)) |rgb|
                 return Self.fromRgba8(rgb[0], rgb[1], rgb[2], math.maxInt(u8));
 
-            if (ascii.startsWithIgnoreCase(lower, "#")) return inner.parseHex(lower[1..]);
+            if (ascii.startsWithIgnoreCase(lower, "#"))
+                return inner.parseHex(lower[1..]);
 
             if (ascii.indexOfIgnoreCase(lower, "(")) |i| {
                 if (ascii.endsWithIgnoreCase(lower, ")")) {
@@ -412,7 +413,8 @@ pub fn Color(comptime T: type) type {
                     var params_list = mem.zeroes([5][]const u8);
                     var j: u3 = 0;
                     while (iter.next()) |param| : (j += 1) {
-                        if (j >= params_list.len) break;
+                        if (j >= params_list.len)
+                            break;
                         params_list[j] = param;
                     }
                     const params = params_list[0..j];
@@ -500,8 +502,10 @@ pub fn Color(comptime T: type) type {
                         else
                             .{ 1.0, true };
 
-                        if (a[1]) a[0] = inner.remap(a[0], -1.0, 1.0, -0.4, 0.4);
-                        if (b[1]) b[0] = inner.remap(b[0], -1.0, 1.0, -0.4, 0.4);
+                        if (a[1])
+                            a[0] = inner.remap(a[0], -1.0, 1.0, -0.4, 0.4);
+                        if (b[1])
+                            b[0] = inner.remap(b[0], -1.0, 1.0, -0.4, 0.4);
                         return Self.fromOklab(@max(l[0], 0.0), a[0], b[0], alpha[0]);
                     }
                     if (mem.eql(u8, fn_name, "oklch")) {
@@ -521,7 +525,8 @@ pub fn Color(comptime T: type) type {
                         else
                             .{ 1.0, true };
 
-                        if (c[1]) c[0] *= 0.4;
+                        if (c[1])
+                            c[0] *= 0.4;
                         return Self.fromOklch(
                             @max(l[0], 0.0),
                             @max(c[0], 0.0),
@@ -588,10 +593,13 @@ pub fn Color(comptime T: type) type {
         /// this `Color`, returning `null` if it is not available.
         pub fn name(self: Self) ?[]const u8 {
             const rgba = self.toRgba8();
-            const rgb = if (rgba[3] == math.maxInt(u8)) rgba[0..3] else return null;
-            for (named_colors.named_colors.keys()) |key| {
-                if (mem.eql(u8, &named_colors.named_colors.get(key).?, rgb)) return key;
-            }
+            const rgb = if (rgba[3] == math.maxInt(u8))
+                rgba[0..3]
+            else
+                return null;
+            for (named_colors.named_colors.keys()) |key|
+                if (mem.eql(u8, &named_colors.named_colors.get(key).?, rgb))
+                    return key;
             return null;
         }
 
@@ -627,7 +635,10 @@ pub fn Color(comptime T: type) type {
         pub fn toLinearRgb(self: Self) [4]T {
             const inner = struct {
                 pub fn toLinear(x: T) T {
-                    return if (x >= 0.04045) math.pow(T, (x + 0.055) / 1.055, 2.4) else x / 12.92;
+                    return if (x >= 0.04045)
+                        math.pow(T, (x + 0.055) / 1.055, 2.4)
+                    else
+                        x / 12.92;
                 }
             };
             return .{
@@ -719,19 +730,26 @@ pub fn Color(comptime T: type) type {
                 pub fn hueToRgb(n1: T, n2: T, ih: T) T {
                     const iih = @mod(@mod(ih, 6.0) + 6.0, 6.0);
 
-                    if (iih < 1.0) return n1 + ((n2 - n1) * iih);
+                    if (iih < 1.0)
+                        return n1 + ((n2 - n1) * iih);
 
-                    if (iih < 3.0) return n2;
+                    if (iih < 3.0)
+                        return n2;
 
-                    if (iih < 4.0) return n1 + ((n2 - n1) * (4.0 - iih));
+                    if (iih < 4.0)
+                        return n1 + ((n2 - n1) * (4.0 - iih));
 
                     return n1;
                 }
             };
 
-            if (s == 0.0) return .{ l, l, l };
+            if (s == 0.0)
+                return .{ l, l, l };
 
-            const n2 = if (l < 0.5) l * (1.0 + s) else l + s - (l * s);
+            const n2 = if (l < 0.5)
+                l * (1.0 + s)
+            else
+                l + s - (l * s);
 
             const n1 = 2.0 * l - n2;
             const hp = h / 60.0;
@@ -746,17 +764,26 @@ pub fn Color(comptime T: type) type {
             const max = @max(r, @max(g, b));
             const l = (max + min) / 2.0;
 
-            if (min == max) return .{ 0.0, 0.0, l };
+            if (min == max)
+                return .{ 0.0, 0.0, l };
 
             const d = max - min;
 
-            const s = if (l < 0.5) d / (max + min) else d / (2.0 - max - min);
+            const s = if (l < 0.5)
+                d / (max + min)
+            else
+                d / (2.0 - max - min);
 
             const dr = (max - r) / d;
             const dg = (max - g) / d;
             const db = (max - b) / d;
 
-            var h = if (r == max) db - dg else if (g == max) 2.0 + dr - db else 4.0 + dg - dr;
+            var h = if (r == max)
+                db - dg
+            else if (g == max)
+                2.0 + dr - db
+            else
+                4.0 + dg - dr;
 
             h = @mod((h * 60.0), 360.0);
             return .{ Self.normalizeAngle(h), s, l };
@@ -764,9 +791,8 @@ pub fn Color(comptime T: type) type {
 
         fn normalizeAngle(t: T) T {
             var it = @mod(t, 360.0);
-            if (it < 0.0) {
+            if (it < 0.0)
                 it += 360.0;
-            }
             return it;
         }
 

@@ -24,12 +24,12 @@ test "named_colors" {
                 const c1 = try Color(ft).parse(name);
                 try testing.expectEqual(rgb, c1.toRgba8()[0..3].*);
 
-                for (skip_list) |nc| {
-                    if (ascii.eqlIgnoreCase(name, nc)) continue :outer;
-                }
-                for (gray_list) |nc| {
-                    if (ascii.indexOfIgnoreCase(name, nc) != null) continue :outer;
-                }
+                for (skip_list) |nc|
+                    if (ascii.eqlIgnoreCase(name, nc))
+                        continue :outer;
+                for (gray_list) |nc|
+                    if (ascii.indexOfIgnoreCase(name, nc) != null)
+                        continue :outer;
                 try testing.expectEqualStrings(name, c1.name().?);
 
                 const r, const g, const b = rgb;
@@ -200,12 +200,12 @@ test "named_colors" {
                 const hex = try c1.toHexString(&buf);
                 try testing.expectEqualStrings(td[1], hex);
 
-                for (skip_list) |nc| {
-                    if (ascii.eqlIgnoreCase(td[0], nc)) continue :outer;
-                }
-                for (gray_list) |nc| {
-                    if (ascii.indexOfIgnoreCase(td[0], nc) != null) continue :outer;
-                }
+                for (skip_list) |nc|
+                    if (ascii.eqlIgnoreCase(td[0], nc))
+                        continue :outer;
+                for (gray_list) |nc|
+                    if (ascii.indexOfIgnoreCase(td[0], nc) != null)
+                        continue :outer;
 
                 const c2 = try Color(ft).parse(td[1]);
                 try testing.expectEqualStrings(td[0], c2.name().?);
@@ -222,9 +222,8 @@ test "named_colors" {
                 Color(ft).init(1.0, 0.5, 0.0, 1.0),
                 Color(ft).fromRgba8(0, 50, 100, 255),
             };
-            for (test_data) |c| {
+            for (test_data) |c|
                 try testing.expectEqual(null, c.name());
-            }
         }
     }
 
@@ -386,12 +385,12 @@ test "named_colors" {
             outer: for (test_data) |td| {
                 const c = try Color(ft).parse(td[0]);
 
-                for (skip_list) |nc| {
-                    if (ascii.eqlIgnoreCase(td[1], nc)) continue :outer;
-                }
-                for (gray_list) |nc| {
-                    if (ascii.indexOfIgnoreCase(td[1], nc) != null) continue :outer;
-                }
+                for (skip_list) |nc|
+                    if (ascii.eqlIgnoreCase(td[1], nc))
+                        continue :outer;
+                for (gray_list) |nc|
+                    if (ascii.indexOfIgnoreCase(td[1], nc) != null)
+                        continue :outer;
 
                 try testing.expectEqualStrings(td[1], c.name().?);
             }

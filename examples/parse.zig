@@ -26,9 +26,8 @@ pub fn main() !void {
     const color = try csscolorparser.Color(f64).parse(input);
 
     const stdout = std.io.getStdOut().writer();
-    if (color.name()) |name| {
+    if (color.name()) |name|
         try stdout.print("Name: {s}\n", .{name});
-    }
     {
         var buf: [9]u8 = undefined;
         const hex = try color.toHexString(&buf);
