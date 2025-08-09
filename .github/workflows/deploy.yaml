@@ -29,9 +29,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Setup Zig environment
-        uses: goto-bus-stop/setup-zig@v2.2.1
+        uses: mlugg/setup-zig@v2.0.5
         with:
-          version: 0.14.0
+          version: "latest"
       - name: Build the documentation
         run: zig build doc --summary all
       - name: Minify the documentation
