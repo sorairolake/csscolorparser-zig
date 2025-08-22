@@ -14,7 +14,11 @@ All notable changes to this project will be documented in this file.
 The format is based on https://keepachangelog.com/[Keep a Changelog], and this
 project adheres to https://semver.org/[Semantic Versioning].
 
-== {compare-url}/v0.1.0\...HEAD[Unreleased]
+== {compare-url}/v0.1.0\...v0.2.0[0.2.0] - 2025-08-22
+
+=== Changed
+
+* Migrate to Zig version 0.15.1 ({pull-request-url}/11[#11])
 
 === Fixed
 

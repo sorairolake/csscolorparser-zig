@@ -18,14 +18,14 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     const input = if (args.len < 2)
-        (try std.io.getStdIn().reader().readUntilDelimiterOrEofAlloc(allocator, '\n', std.math.maxInt(usize))).?
+        (try std.fs.File.stdin().deprecatedReader().readUntilDelimiterOrEofAlloc(allocator, '\n', std.math.maxInt(usize))).?
     else
         try allocator.dupe(u8, args[1]);
     defer allocator.free(input);
 
     const color = try csscolorparser.Color(f64).parse(input);
 
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
     if (color.name()) |name|
         try stdout.print("Name: {s}\n", .{name});
     {
