@@ -45,25 +45,11 @@ exe.root_module.addImport("csscolorparser", csscolorparser.module("csscolorparse
 
 ### Documentation
 
-To build the documentation:
-
-```sh
-zig build doc
-```
-
-The result is generated in `zig-out/doc/csscolorparser`.
-
-If you want to preview this, run a HTTP server locally. For example:
-
-```sh
-python -m http.server -d zig-out/doc/csscolorparser
-```
-
-Then open `http://localhost:8000/` in your browser.
+See the [documentation][docs-url] for more details.
 
 ## Zig version
 
-This library is compatible with Zig version 0.14.0.
+This library is compatible with Zig version 0.15.1.
 
 ## Source code
 
@@ -111,6 +97,7 @@ licensing information.
 [lab-lch]: https://www.w3.org/TR/css-color-4/#specifying-lab-lch
 [oklab-oklch]: https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch
 [`color()`]: https://www.w3.org/TR/css-color-4/#color-function
+[docs-url]: https://sorairolake.github.io/csscolorparser-zig/
 [CHANGELOG.adoc]: CHANGELOG.adoc
 [CONTRIBUTING.adoc]: CONTRIBUTING.adoc
 [`csscolorparser`]: https://crates.io/crates/csscolorparser

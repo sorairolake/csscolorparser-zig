@@ -23,6 +23,9 @@ jobs:
           - ubuntu
           - macos
           - windows
+        version-alias:
+          - minimum
+          - latest
         include:
           - os-alias: ubuntu
             os: ubuntu-24.04
@@ -30,13 +33,17 @@ jobs:
             os: macos-14
           - os-alias: windows
             os: windows-2022
+          - version-alias: minimum
+            version: "0.15.1"
+          - version-alias: latest
+            version: "latest"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Zig environment
-        uses: goto-bus-stop/setup-zig@v2.2.1
+        uses: mlugg/setup-zig@v2.0.5
         with:
-          version: 0.14.0
+          version: ${{ matrix.version }}
       - name: Build a project
         run: zig build --summary all
       - name: Build examples
@@ -49,10 +56,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Zig environment
-        uses: goto-bus-stop/setup-zig@v2.2.1
+        uses: mlugg/setup-zig@v2.0.5
         with:
-          version: 0.14.0
+          version: "latest"
       - name: Check code formatted
         run: zig fmt --check .

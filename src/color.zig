@@ -9,12 +9,10 @@ const std = @import("std");
 
 const named_colors = @import("named_colors.zig");
 
-const ArrayList = std.ArrayList;
 const ascii = std.ascii;
 const fmt = std.fmt;
 const BufPrintError = fmt.BufPrintError;
 const Case = fmt.Case;
-const heap = std.heap;
 const math = std.math;
 const mem = std.mem;
 const testing = std.testing;
@@ -24,35 +22,40 @@ const ParseColorError = @import("errors.zig").ParseColorError;
 /// This type represents a CSS color defined in the W3C's
 /// [CSS Color Module Level 4](https://www.w3.org/TR/css-color-4/).
 ///
-/// The type of `T` must be a floating-point type.
+/// The type of `T` must be a floating-point type such as `f32` or `f64`.
 pub fn Color(comptime T: type) type {
     if (@typeInfo(T) != .float)
         @compileError("`" ++ @typeName(T) ++ "` is not a floating-point type");
 
     return struct {
-        /// The red component.
+        /// The red component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents the minimum value and 100% represents the maximum value.
         red: T = 0.0,
 
-        /// The green component.
+        /// The green component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents the minimum value and 100% represents the maximum value.
         green: T = 0.0,
 
-        /// The blue component.
+        /// The blue component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents the minimum value and 100% represents the maximum value.
         blue: T = 0.0,
 
-        /// The alpha component.
+        /// The alpha component of the color.
         ///
-        /// The value must be in the range of 0.0 to 1.0.
+        /// The value must be in the range of 0.0 (0%) to 1.0 (100%). 0%
+        /// represents a fully transparent color and 100% represents a fully
+        /// opaque color.
         alpha: T = 1.0,
 
         const Self = @This();
 
-        /// Creates a new CSS color with the given components.
+        /// Creates a new CSS color with the given components of the color.
         ///
         /// If the value is out of range, this method restricts it to the valid
         /// range.
@@ -67,12 +70,10 @@ pub fn Color(comptime T: type) type {
 
         test init {
             const color = Color(f64).init(1.23, 0.5, -0.01, 1.01);
-            try testing.expectEqualSlices(f64, &[4]f64{ 1.0, 0.5, 0.0, 1.0 }, &[4]f64{
-                color.red,
-                color.green,
-                color.blue,
-                color.alpha,
-            });
+            try testing.expectEqual(
+                .{ 1.0, 0.5, 0.0, 1.0 },
+                .{ color.red, color.green, color.blue, color.alpha },
+            );
         }
 
         /// Restricts the values to the valid range.
@@ -86,12 +87,10 @@ pub fn Color(comptime T: type) type {
         test clamp {
             var color = Color(f64){ .red = 1.23, .green = 0.5, .blue = -0.01, .alpha = 1.01 };
             color.clamp();
-            try testing.expectEqualSlices(f64, &[4]f64{ 1.0, 0.5, 0.0, 1.0 }, &[4]f64{
-                color.red,
-                color.green,
-                color.blue,
-                color.alpha,
-            });
+            try testing.expectEqual(
+                .{ 1.0, 0.5, 0.0, 1.0 },
+                .{ color.red, color.green, color.blue, color.alpha },
+            );
         }
 
         /// Creates a `Color` from
@@ -107,8 +106,11 @@ pub fn Color(comptime T: type) type {
         }
 
         test fromRgba8 {
-            const color = Color(f64).fromRgba8(255, 0, 0, 255);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            const color = Color(f64).fromRgba8(165, 42, 42, 255);
+            try testing.expectEqualStrings("brown", color.name().?);
+            var buf: [7]u8 = undefined;
+            const hex = try color.toHexString(&buf);
+            try testing.expectEqualStrings("#a52a2a", hex);
         }
 
         /// Creates a `Color` from linear-light RGB values.
@@ -131,7 +133,7 @@ pub fn Color(comptime T: type) type {
 
         test fromLinearRgb {
             const color = Color(f64).fromLinearRgb(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -147,8 +149,11 @@ pub fn Color(comptime T: type) type {
         }
 
         test fromHsl {
-            const color = Color(f64).fromHsl(360.0, 1.0, 0.5, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            const color = Color(f64).fromHsl(248.0, 0.39, 0.392, 1.0);
+            try testing.expectEqual(null, color.name());
+            var buf: [7]u8 = undefined;
+            const hex = try color.toHexString(&buf);
+            try testing.expectEqualStrings("#473d8b", hex);
         }
 
         /// Creates a `Color` from
@@ -178,8 +183,11 @@ pub fn Color(comptime T: type) type {
         }
 
         test fromHwb {
-            const color = Color(f64).fromHwb(0.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            const color = Color(f64).fromHwb(50.6, 0.0, 0.0, 1.0);
+            try testing.expectEqualStrings("gold", color.name().?);
+            var buf: [7]u8 = undefined;
+            const hex = try color.toHexString(&buf);
+            try testing.expectEqualStrings("#ffd700", hex);
         }
 
         /// Creates a `Color` from
@@ -194,16 +202,6 @@ pub fn Color(comptime T: type) type {
             const ib = -0.004_196_086_3 * l - 0.703_418_614_7 * m + 1.707_614_701_0 * s;
 
             return Self.fromLinearRgb(r, g, ib, alpha);
-        }
-
-        test fromOklab {
-            const color = Color(f64).fromOklab(
-                0.627_915_193_996_980_9,
-                0.224_903_230_866_107_1,
-                0.125_802_870_124_518_02,
-                1.0,
-            );
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
         }
 
         /// Creates a `Color` from
@@ -223,9 +221,9 @@ pub fn Color(comptime T: type) type {
                             return (n << 4) | n;
                         }
                     };
-                    for (s) |c| {
-                        if (!ascii.isAscii(c)) return error.InvalidHex;
-                    }
+                    for (s) |c|
+                        if (!ascii.isAscii(c))
+                            return error.InvalidHex;
 
                     const n = s.len;
 
@@ -274,20 +272,23 @@ pub fn Color(comptime T: type) type {
 
                 test "parsePercentOrFloat" {
                     {
-                        const test_data = [_]struct { []const u8, struct { f64, bool } }{
-                            .{ "0%", .{ 0.0, true } },
-                            .{ "100%", .{ 1.0, true } },
-                            .{ "50%", .{ 0.5, true } },
-                            .{ "0", .{ 0.0, false } },
-                            .{ "1", .{ 1.0, false } },
-                            .{ "0.5", .{ 0.5, false } },
-                            .{ "100.0", .{ 100.0, false } },
-                            .{ "-23.7", .{ -23.7, false } },
-                        };
-                        for (test_data) |td| {
-                            const v = @This().parsePercentOrFloat(td[0]).?;
-                            try testing.expectEqual(td[1][0], v[0]);
-                            try testing.expectEqual(td[1][1], v[1]);
+                        const float_types = [_]type{f64};
+                        inline for (float_types) |ft| {
+                            const test_data = [_]struct { []const u8, struct { ft, bool } }{
+                                .{ "0%", .{ 0.0, true } },
+                                .{ "100%", .{ 1.0, true } },
+                                .{ "50%", .{ 0.5, true } },
+                                .{ "0", .{ 0.0, false } },
+                                .{ "1", .{ 1.0, false } },
+                                .{ "0.5", .{ 0.5, false } },
+                                .{ "100.0", .{ 100.0, false } },
+                                .{ "-23.7", .{ -23.7, false } },
+                            };
+                            for (test_data) |td| {
+                                const v = @This().parsePercentOrFloat(td[0]).?;
+                                try testing.expectEqual(td[1][0], v[0]);
+                                try testing.expectEqual(td[1][1], v[1]);
+                            }
                         }
                     }
                     {
@@ -311,19 +312,22 @@ pub fn Color(comptime T: type) type {
 
                 test "parsePercentOr255" {
                     {
-                        const test_data = [_]struct { []const u8, struct { f64, bool } }{
-                            .{ "0%", .{ 0.0, true } },
-                            .{ "100%", .{ 1.0, true } },
-                            .{ "50%", .{ 0.5, true } },
-                            .{ "-100%", .{ -1.0, true } },
-                            .{ "0", .{ 0.0, false } },
-                            .{ "255", .{ 1.0, false } },
-                            .{ "127.5", .{ 0.5, false } },
-                        };
-                        for (test_data) |td| {
-                            const v = @This().parsePercentOr255(td[0]).?;
-                            try testing.expectEqual(td[1][0], v[0]);
-                            try testing.expectEqual(td[1][1], v[1]);
+                        const float_types = [_]type{ f16, f32, f64, f80, f128 };
+                        inline for (float_types) |ft| {
+                            const test_data = [_]struct { []const u8, struct { ft, bool } }{
+                                .{ "0%", .{ 0.0, true } },
+                                .{ "100%", .{ 1.0, true } },
+                                .{ "50%", .{ 0.5, true } },
+                                .{ "-100%", .{ -1.0, true } },
+                                .{ "0", .{ 0.0, false } },
+                                .{ "255", .{ 1.0, false } },
+                                .{ "127.5", .{ 0.5, false } },
+                            };
+                            for (test_data) |td| {
+                                const v = @This().parsePercentOr255(td[0]).?;
+                                try testing.expectEqual(td[1][0], v[0]);
+                                try testing.expectEqual(td[1][1], v[1]);
+                            }
                         }
                     }
                     {
@@ -336,9 +340,8 @@ pub fn Color(comptime T: type) type {
                 }
 
                 pub fn parseAngle(s: []const u8) ?T {
-                    if (ascii.endsWithIgnoreCase(s, "deg")) {
+                    if (ascii.endsWithIgnoreCase(s, "deg"))
                         return fmt.parseFloat(T, s[0..(s.len - 3)]) catch null;
-                    }
                     if (ascii.endsWithIgnoreCase(s, "grad")) {
                         const t = fmt.parseFloat(T, s[0..(s.len - 4)]) catch return null;
                         return t * 360.0 / 400.0;
@@ -356,20 +359,23 @@ pub fn Color(comptime T: type) type {
 
                 test "parseAngle" {
                     {
-                        const test_data = [_]struct { []const u8, f64 }{
-                            .{ "360", 360.0 },
-                            .{ "127.356", 127.356 },
-                            .{ "+120deg", 120.0 },
-                            .{ "90deg", 90.0 },
-                            .{ "-127deg", -127.0 },
-                            .{ "100grad", 90.0 },
-                            .{ "1.5707963267948966rad", 90.0 },
-                            .{ "0.25turn", 90.0 },
-                            .{ "-0.25turn", -90.0 },
-                        };
-                        for (test_data) |td| {
-                            const v = @This().parseAngle(td[0]).?;
-                            try testing.expectEqual(td[1], v);
+                        const float_types = [_]type{f64};
+                        inline for (float_types) |ft| {
+                            const test_data = [_]struct { []const u8, ft }{
+                                .{ "360", 360.0 },
+                                .{ "127.356", 127.356 },
+                                .{ "+120deg", 120.0 },
+                                .{ "90deg", 90.0 },
+                                .{ "-127deg", -127.0 },
+                                .{ "100grad", 90.0 },
+                                .{ "1.5707963267948966rad", 90.0 },
+                                .{ "0.25turn", 90.0 },
+                                .{ "-0.25turn", -90.0 },
+                            };
+                            for (test_data) |td| {
+                                const v = @This().parseAngle(td[0]).?;
+                                try testing.expectEqual(td[1], v);
+                            }
                         }
                     }
                     {
@@ -388,12 +394,14 @@ pub fn Color(comptime T: type) type {
             var buf: [1 << 8]u8 = undefined;
             const lower = ascii.lowerString(&buf, mem.trim(u8, str, &ascii.whitespace));
 
-            if (mem.eql(u8, lower, "transparent")) return Self.init(0.0, 0.0, 0.0, 0.0);
+            if (mem.eql(u8, lower, "transparent"))
+                return Self.init(0.0, 0.0, 0.0, 0.0);
 
             if (named_colors.named_colors.get(lower)) |rgb|
                 return Self.fromRgba8(rgb[0], rgb[1], rgb[2], math.maxInt(u8));
 
-            if (ascii.startsWithIgnoreCase(lower, "#")) return inner.parseHex(lower[1..]);
+            if (ascii.startsWithIgnoreCase(lower, "#"))
+                return inner.parseHex(lower[1..]);
 
             if (ascii.indexOfIgnoreCase(lower, "(")) |i| {
                 if (ascii.endsWithIgnoreCase(lower, ")")) {
@@ -401,12 +409,15 @@ pub fn Color(comptime T: type) type {
                     const s = lower[(i + 1)..(lower.len - 1)];
                     mem.replaceScalar(u8, s, ',', ' ');
                     mem.replaceScalar(u8, s, '/', ' ');
-                    var params_list = try ArrayList([]const u8)
-                        .initCapacity(heap.page_allocator, 4);
-                    errdefer params_list.deinit();
                     var iter = mem.tokenizeAny(u8, s, &ascii.whitespace);
-                    while (iter.next()) |param| try params_list.append(param);
-                    const params = try params_list.toOwnedSlice();
+                    var params_list = mem.zeroes([5][]const u8);
+                    var j: u3 = 0;
+                    while (iter.next()) |param| : (j += 1) {
+                        if (j >= params_list.len)
+                            break;
+                        params_list[j] = param;
+                    }
+                    const params = params_list[0..j];
                     const params_len = params.len;
 
                     if (mem.eql(u8, fn_name, "rgb") or mem.eql(u8, fn_name, "rgba")) {
@@ -491,8 +502,10 @@ pub fn Color(comptime T: type) type {
                         else
                             .{ 1.0, true };
 
-                        if (a[1]) a[0] = inner.remap(a[0], -1.0, 1.0, -0.4, 0.4);
-                        if (b[1]) b[0] = inner.remap(b[0], -1.0, 1.0, -0.4, 0.4);
+                        if (a[1])
+                            a[0] = inner.remap(a[0], -1.0, 1.0, -0.4, 0.4);
+                        if (b[1])
+                            b[0] = inner.remap(b[0], -1.0, 1.0, -0.4, 0.4);
                         return Self.fromOklab(@max(l[0], 0.0), a[0], b[0], alpha[0]);
                     }
                     if (mem.eql(u8, fn_name, "oklch")) {
@@ -512,7 +525,8 @@ pub fn Color(comptime T: type) type {
                         else
                             .{ 1.0, true };
 
-                        if (c[1]) c[0] *= 0.4;
+                        if (c[1])
+                            c[0] *= 0.4;
                         return Self.fromOklch(
                             @max(l[0], 0.0),
                             @max(c[0], 0.0),
@@ -531,32 +545,73 @@ pub fn Color(comptime T: type) type {
         }
 
         test parse {
-            const color = try Color(f64).parse("#ff0");
-            try testing.expectEqualSlices(
-                f64,
-                &[4]f64{ 1.0, 1.0, 0.0, 1.0 },
-                &[4]f64{ color.red, color.green, color.blue, color.alpha },
-            );
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 255, 0, 255 }, &color.toRgba8());
-            var buf: [7]u8 = undefined;
-            const hex = try color.toHexString(&buf);
-            try testing.expectEqualStrings("#ffff00", hex);
+            var buf: [9]u8 = undefined;
+
+            {
+                const color = try Color(f64).parse("#ff0");
+                try testing.expectEqual(
+                    .{ 1.0, 1.0, 0.0, 1.0 },
+                    .{ color.red, color.green, color.blue, color.alpha },
+                );
+                try testing.expectEqual(.{ 255, 255, 0, 255 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ffff00", hex);
+            }
+
+            {
+                const color = try Color(f64).parse("hsl(360 100% 50%)");
+                try testing.expectEqual(
+                    .{ 1.0, 0.0, 0.0, 1.0 },
+                    .{ color.red, color.green, color.blue, color.alpha },
+                );
+                try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ff0000", hex);
+            }
+
+            {
+                const color = try Color(f64).parse("rgb(255 0 0)");
+                try testing.expectEqual(
+                    .{ 1.0, 0.0, 0.0, 1.0 },
+                    .{ color.red, color.green, color.blue, color.alpha },
+                );
+                try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ff0000", hex);
+            }
+
+            {
+                const color = try Color(f64).parse("#ff00007f");
+                try testing.expectEqual(.{ 255, 0, 0, 127 }, color.toRgba8());
+                const hex = try color.toHexString(&buf);
+                try testing.expectEqualStrings("#ff00007f", hex);
+            }
         }
 
         /// Returns the
         /// [color name](https://www.w3.org/TR/css-color-4/#named-colors) of
         /// this `Color`, returning `null` if it is not available.
         pub fn name(self: Self) ?[]const u8 {
-            const rgb = self.toRgba8()[0..3];
-            for (named_colors.named_colors.keys()) |key| {
-                if (mem.eql(u8, &named_colors.named_colors.get(key).?, rgb)) return key;
-            }
+            const rgba = self.toRgba8();
+            const rgb = if (rgba[3] == math.maxInt(u8))
+                rgba[0..3]
+            else
+                return null;
+            for (named_colors.named_colors.keys()) |key|
+                if (mem.eql(u8, &named_colors.named_colors.get(key).?, rgb))
+                    return key;
             return null;
         }
 
         test name {
-            const color = try Color(f64).parse("#f0f8ff");
-            try testing.expectEqualStrings("aliceblue", color.name().?);
+            const color = try Color(f64).parse("#008080");
+            try testing.expectEqualStrings("teal", color.name().?);
+
+            const color_with_alpha = try Color(f64).parse("#0080807f");
+            try testing.expectEqual(null, color_with_alpha.name());
+
+            const color_without_name = try Color(f64).parse("#7f7f7f");
+            try testing.expectEqual(null, color_without_name.name());
         }
 
         /// Returns an array of
@@ -573,14 +628,17 @@ pub fn Color(comptime T: type) type {
 
         test toRgba8 {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(u8, &[4]u8{ 255, 0, 0, 255 }, &color.toRgba8());
+            try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
         }
 
         /// Returns an array of linear-light RGB values.
         pub fn toLinearRgb(self: Self) [4]T {
             const inner = struct {
                 pub fn toLinear(x: T) T {
-                    return if (x >= 0.04045) math.pow(T, (x + 0.055) / 1.055, 2.4) else x / 12.92;
+                    return if (x >= 0.04045)
+                        math.pow(T, (x + 0.055) / 1.055, 2.4)
+                    else
+                        x / 12.92;
                 }
             };
             return .{
@@ -593,7 +651,7 @@ pub fn Color(comptime T: type) type {
 
         test toLinearRgb {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(f64, &[4]f64{ 1.0, 0.0, 0.0, 1.0 }, &color.toLinearRgb());
+            try testing.expectEqual(.{ 1.0, 0.0, 0.0, 1.0 }, color.toLinearRgb());
         }
 
         /// Returns an array of
@@ -606,7 +664,7 @@ pub fn Color(comptime T: type) type {
 
         test toHsl {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(f64, &[4]f64{ 0.0, 1.0, 0.5, 1.0 }, &color.toHsl());
+            try testing.expectEqual(.{ 0.0, 1.0, 0.5, 1.0 }, color.toHsl());
         }
 
         /// Returns an array of
@@ -627,7 +685,7 @@ pub fn Color(comptime T: type) type {
 
         test toHwb {
             const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            try testing.expectEqualSlices(f64, &[4]f64{ 0.0, 0.0, 0.0, 1.0 }, &color.toHwb());
+            try testing.expectEqual(.{ 0.0, 0.0, 0.0, 1.0 }, color.toHwb());
         }
 
         /// Returns an array of
@@ -645,7 +703,7 @@ pub fn Color(comptime T: type) type {
 
         /// Returns the
         /// [RGB hexadecimal color string](https://www.w3.org/TR/css-color-4/#hex-notation)
-        /// of this `Color`.
+        /// of this `Color` in lower case.
         pub fn toHexString(self: Self, buf: []u8) BufPrintError![]u8 {
             const r, const g, const b, const a = self.toRgba8();
 
@@ -656,10 +714,15 @@ pub fn Color(comptime T: type) type {
         }
 
         test toHexString {
-            const color = Color(f64).init(1.0, 0.0, 0.0, 1.0);
-            var buf: [7]u8 = undefined;
+            var buf: [9]u8 = undefined;
+
+            const color = try Color(f64).parse("mediumpurple");
             const hex = try color.toHexString(&buf);
-            try testing.expectEqualStrings("#ff0000", hex);
+            try testing.expectEqualStrings("#9370db", hex);
+
+            const color_with_alpha = try Color(f64).parse("rgb(147 112 219 / 49.8%)");
+            const hex_with_alpha = try color_with_alpha.toHexString(&buf);
+            try testing.expectEqualStrings("#9370db7f", hex_with_alpha);
         }
 
         fn hslToRgb(h: T, s: T, l: T) [3]T {
@@ -667,19 +730,26 @@ pub fn Color(comptime T: type) type {
                 pub fn hueToRgb(n1: T, n2: T, ih: T) T {
                     const iih = @mod(@mod(ih, 6.0) + 6.0, 6.0);
 
-                    if (iih < 1.0) return n1 + ((n2 - n1) * iih);
+                    if (iih < 1.0)
+                        return n1 + ((n2 - n1) * iih);
 
-                    if (iih < 3.0) return n2;
+                    if (iih < 3.0)
+                        return n2;
 
-                    if (iih < 4.0) return n1 + ((n2 - n1) * (4.0 - iih));
+                    if (iih < 4.0)
+                        return n1 + ((n2 - n1) * (4.0 - iih));
 
                     return n1;
                 }
             };
 
-            if (s == 0.0) return .{ l, l, l };
+            if (s == 0.0)
+                return .{ l, l, l };
 
-            const n2 = if (l < 0.5) l * (1.0 + s) else l + s - (l * s);
+            const n2 = if (l < 0.5)
+                l * (1.0 + s)
+            else
+                l + s - (l * s);
 
             const n1 = 2.0 * l - n2;
             const hp = h / 60.0;
@@ -694,17 +764,26 @@ pub fn Color(comptime T: type) type {
             const max = @max(r, @max(g, b));
             const l = (max + min) / 2.0;
 
-            if (min == max) return .{ 0.0, 0.0, l };
+            if (min == max)
+                return .{ 0.0, 0.0, l };
 
             const d = max - min;
 
-            const s = if (l < 0.5) d / (max + min) else d / (2.0 - max - min);
+            const s = if (l < 0.5)
+                d / (max + min)
+            else
+                d / (2.0 - max - min);
 
             const dr = (max - r) / d;
             const dg = (max - g) / d;
             const db = (max - b) / d;
 
-            var h = if (r == max) db - dg else if (g == max) 2.0 + dr - db else 4.0 + dg - dr;
+            var h = if (r == max)
+                db - dg
+            else if (g == max)
+                2.0 + dr - db
+            else
+                4.0 + dg - dr;
 
             h = @mod((h * 60.0), 360.0);
             return .{ Self.normalizeAngle(h), s, l };
@@ -712,9 +791,8 @@ pub fn Color(comptime T: type) type {
 
         fn normalizeAngle(t: T) T {
             var it = @mod(t, 360.0);
-            if (it < 0.0) {
+            if (it < 0.0)
                 it += 360.0;
-            }
             return it;
         }
 
@@ -725,17 +803,20 @@ pub fn Color(comptime T: type) type {
 }
 
 test "normalizeAngle" {
-    const data = [_][2]f64{
-        .{ 0.0, 0.0 },
-        .{ 360.0, 0.0 },
-        .{ 400.0, 40.0 },
-        .{ 1155.0, 75.0 },
-        .{ -360.0, 0.0 },
-        .{ -90.0, 270.0 },
-        .{ -765.0, 315.0 },
-    };
-    for (data) |d| {
-        const c = Color(f64).normalizeAngle(d[0]);
-        try testing.expectEqual(d[1], c);
+    const float_types = [_]type{ f16, f32, f64, f80, f128 };
+    inline for (float_types) |ft| {
+        const data = [_][2]ft{
+            .{ 0.0, 0.0 },
+            .{ 360.0, 0.0 },
+            .{ 400.0, 40.0 },
+            .{ 1155.0, 75.0 },
+            .{ -360.0, 0.0 },
+            .{ -90.0, 270.0 },
+            .{ -765.0, 315.0 },
+        };
+        for (data) |d| {
+            const c = Color(ft).normalizeAngle(d[0]);
+            try testing.expectEqual(d[1], c);
+        }
     }
 }

@@ -25,9 +25,12 @@ test "parser" {
         .{ "hwb(0 50% 50%)", .{ 128, 128, 128, 255 } },
     };
 
-    for (test_data) |td| {
-        const a = try Color(f64).parse(td[0]);
-        try testing.expectEqualSlices(u8, &td[1], &a.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (test_data) |td| {
+            const a = try Color(ft).parse(td[0]);
+            try testing.expectEqual(td[1], a.toRgba8());
+        }
     }
 }
 
@@ -45,10 +48,13 @@ test "equal" {
         .{ "#7654CD", "rgb(46.27% 32.94% 80.39%)" },
     };
 
-    for (test_data) |td| {
-        const a = try Color(f64).parse(td[0]);
-        const b = try Color(f64).parse(td[1]);
-        try testing.expectEqualSlices(u8, &a.toRgba8(), &b.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (test_data) |td| {
+            const a = try Color(ft).parse(td[0]);
+            const b = try Color(ft).parse(td[1]);
+            try testing.expectEqual(a.toRgba8(), b.toRgba8());
+        }
     }
 }
 
@@ -72,9 +78,12 @@ test "black" {
 
     const black = [4]u8{ 0, 0, 0, 255 };
 
-    for (data) |s| {
-        const c = try Color(f64).parse(s);
-        try testing.expectEqualSlices(u8, &black, &c.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (data) |s| {
+            const c = try Color(ft).parse(s);
+            try testing.expectEqual(black, c.toRgba8());
+        }
     }
 }
 
@@ -106,9 +115,12 @@ test "red" {
 
     const red = [4]u8{ 255, 0, 0, 255 };
 
-    for (data) |s| {
-        const c = try Color(f64).parse(s);
-        try testing.expectEqualSlices(u8, &red, &c.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (data) |s| {
+            const c = try Color(ft).parse(s);
+            try testing.expectEqual(red, c.toRgba8());
+        }
     }
 }
 
@@ -142,9 +154,12 @@ test "lime" {
 
     const lime = [4]u8{ 0, 255, 0, 255 };
 
-    for (data) |s| {
-        const c = try Color(f64).parse(s);
-        try testing.expectEqualSlices(u8, &lime, &c.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (data) |s| {
+            const c = try Color(ft).parse(s);
+            try testing.expectEqual(lime, c.toRgba8());
+        }
     }
 }
 
@@ -163,9 +178,12 @@ test "lime alpha" {
 
     const lime_alpha = [4]u8{ 0, 255, 0, 128 };
 
-    for (data) |s| {
-        const c = try Color(f64).parse(s);
-        try testing.expectEqualSlices(u8, &lime_alpha, &c.toRgba8());
+    const float_types = [_]type{ f32, f64 };
+    inline for (float_types) |ft| {
+        for (data) |s| {
+            const c = try Color(ft).parse(s);
+            try testing.expectEqual(lime_alpha, c.toRgba8());
+        }
     }
 }
 
@@ -207,9 +225,12 @@ test "invalid format" {
             "oklch(0,0,0,x)",
         };
 
-        for (test_data) |s| {
-            const c = Color(f64).parse(s);
-            try testing.expect(meta.isError(c));
+        const float_types = [_]type{ f32, f64 };
+        inline for (float_types) |ft| {
+            for (test_data) |s| {
+                const c = Color(ft).parse(s);
+                try testing.expect(meta.isError(c));
+            }
         }
     }
 
@@ -232,9 +253,12 @@ test "invalid format" {
             .{ "\u{1F602}", ParseColorError.UnknownFormat },
         };
 
-        for (test_data) |td| {
-            const c = Color(f64).parse(td[0]);
-            try testing.expectError(td[1], c);
+        const float_types = [_]type{ f32, f64 };
+        inline for (float_types) |ft| {
+            for (test_data) |td| {
+                const c = Color(ft).parse(td[0]);
+                try testing.expectError(td[1], c);
+            }
         }
     }
 }
