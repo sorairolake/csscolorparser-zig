@@ -34,7 +34,7 @@ jobs:
           - os-alias: windows
             os: windows-2022
           - version-alias: minimum
-            version: "0.14.0"
+            version: "0.15.1"
           - version-alias: latest
             version: "latest"
     steps:
