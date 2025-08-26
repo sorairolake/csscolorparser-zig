@@ -39,7 +39,7 @@ jobs:
         with:
           args: -o zig-out/doc/csscolorparser/ -r zig-out/doc/csscolorparser/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: zig-out/doc/csscolorparser
 
