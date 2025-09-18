@@ -61,5 +61,18 @@ jobs:
         uses: mlugg/setup-zig@v2.0.5
         with:
           version: "latest"
-      - name: Check code formatted
+      - name: Run formatter in check mode
         run: zig fmt --check .
+
+  prettier:
+    name: Prettier
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Run formatter in check mode
+        run: npx prettier -c "**.{md,yaml,yml}"
