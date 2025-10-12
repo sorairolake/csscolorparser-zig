@@ -30,9 +30,9 @@ jobs:
           - os-alias: ubuntu
             os: ubuntu-24.04
           - os-alias: macos
-            os: macos-14
+            os: macos-15
           - os-alias: windows
-            os: windows-2022
+            os: windows-2025
           - version-alias: minimum
             version: "0.15.1"
           - version-alias: latest
