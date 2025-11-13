@@ -30,7 +30,7 @@ pub fn main() !void {
         try stdout.print("Name: {s}\n", .{name});
     {
         var buf: [9]u8 = undefined;
-        const hex = try color.toHexString(&buf);
+        const hex = try color.toCssHex(&buf);
         try stdout.print("Hex: {s}\n", .{hex});
     }
     {

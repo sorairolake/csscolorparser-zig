@@ -109,7 +109,7 @@ pub fn Color(comptime T: type) type {
             const color = Color(f64).fromRgba8(165, 42, 42, 255);
             try testing.expectEqualStrings("brown", color.name().?);
             var buf: [7]u8 = undefined;
-            const hex = try color.toHexString(&buf);
+            const hex = try color.toCssHex(&buf);
             try testing.expectEqualStrings("#a52a2a", hex);
         }
 
@@ -152,7 +152,7 @@ pub fn Color(comptime T: type) type {
             const color = Color(f64).fromHsl(248.0, 0.39, 0.392, 1.0);
             try testing.expectEqual(null, color.name());
             var buf: [7]u8 = undefined;
-            const hex = try color.toHexString(&buf);
+            const hex = try color.toCssHex(&buf);
             try testing.expectEqualStrings("#473d8b", hex);
         }
 
@@ -186,7 +186,7 @@ pub fn Color(comptime T: type) type {
             const color = Color(f64).fromHwb(50.6, 0.0, 0.0, 1.0);
             try testing.expectEqualStrings("gold", color.name().?);
             var buf: [7]u8 = undefined;
-            const hex = try color.toHexString(&buf);
+            const hex = try color.toCssHex(&buf);
             try testing.expectEqualStrings("#ffd700", hex);
         }
 
@@ -554,7 +554,7 @@ pub fn Color(comptime T: type) type {
                     .{ color.red, color.green, color.blue, color.alpha },
                 );
                 try testing.expectEqual(.{ 255, 255, 0, 255 }, color.toRgba8());
-                const hex = try color.toHexString(&buf);
+                const hex = try color.toCssHex(&buf);
                 try testing.expectEqualStrings("#ffff00", hex);
             }
 
@@ -565,7 +565,7 @@ pub fn Color(comptime T: type) type {
                     .{ color.red, color.green, color.blue, color.alpha },
                 );
                 try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
-                const hex = try color.toHexString(&buf);
+                const hex = try color.toCssHex(&buf);
                 try testing.expectEqualStrings("#ff0000", hex);
             }
 
@@ -576,14 +576,14 @@ pub fn Color(comptime T: type) type {
                     .{ color.red, color.green, color.blue, color.alpha },
                 );
                 try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
-                const hex = try color.toHexString(&buf);
+                const hex = try color.toCssHex(&buf);
                 try testing.expectEqualStrings("#ff0000", hex);
             }
 
             {
                 const color = try Color(f64).parse("#ff00007f");
                 try testing.expectEqual(.{ 255, 0, 0, 127 }, color.toRgba8());
-                const hex = try color.toHexString(&buf);
+                const hex = try color.toCssHex(&buf);
                 try testing.expectEqualStrings("#ff00007f", hex);
             }
         }
@@ -702,9 +702,9 @@ pub fn Color(comptime T: type) type {
         }
 
         /// Returns the
-        /// [RGB hexadecimal color string](https://www.w3.org/TR/css-color-4/#hex-notation)
+        /// [CSS RGB hexadecimal color representation](https://www.w3.org/TR/css-color-4/#hex-notation)
         /// of this `Color` in lower case.
-        pub fn toHexString(self: Self, buf: []u8) BufPrintError![]u8 {
+        pub fn toCssHex(self: Self, buf: []u8) BufPrintError![]u8 {
             const r, const g, const b, const a = self.toRgba8();
 
             return if (a < math.maxInt(u8))
@@ -713,15 +713,15 @@ pub fn Color(comptime T: type) type {
                 fmt.bufPrint(buf, "#{x:0>2}{x:0>2}{x:0>2}", .{ r, g, b });
         }
 
-        test toHexString {
+        test toCssHex {
             var buf: [9]u8 = undefined;
 
             const color = try Color(f64).parse("mediumpurple");
-            const hex = try color.toHexString(&buf);
+            const hex = try color.toCssHex(&buf);
             try testing.expectEqualStrings("#9370db", hex);
 
             const color_with_alpha = try Color(f64).parse("rgb(147 112 219 / 49.8%)");
-            const hex_with_alpha = try color_with_alpha.toHexString(&buf);
+            const hex_with_alpha = try color_with_alpha.toCssHex(&buf);
             try testing.expectEqualStrings("#9370db7f", hex_with_alpha);
         }
 

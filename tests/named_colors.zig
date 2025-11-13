@@ -197,7 +197,7 @@ test "named_colors" {
         inline for (float_types) |ft| {
             outer: for (test_data) |td| {
                 const c1 = try Color(ft).parse(td[0]);
-                const hex = try c1.toHexString(&buf);
+                const hex = try c1.toCssHex(&buf);
                 try testing.expectEqualStrings(td[1], hex);
 
                 for (skip_list) |nc|

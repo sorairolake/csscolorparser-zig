@@ -18,7 +18,7 @@ test "basic" {
                 .{ color.red, color.green, color.blue, color.alpha },
             );
             try testing.expectEqual(.{ 255, 0, 0, 255 }, color.toRgba8());
-            const hex = try color.toHexString(&buf);
+            const hex = try color.toCssHex(&buf);
             try testing.expectEqualStrings("#ff0000", hex);
             try testing.expectEqual(.{ 0.0, 1.0, 0.5, 1.0 }, color.toHsl());
             try testing.expectEqual(.{ 0.0, 0.0, 0.0, 1.0 }, color.toHwb());
@@ -28,7 +28,7 @@ test "basic" {
         {
             const color = Color(ft).init(1.0, 0.0, 0.0, 0.5);
             try testing.expectEqual(.{ 255, 0, 0, 128 }, color.toRgba8());
-            const hex = try color.toHexString(&buf);
+            const hex = try color.toCssHex(&buf);
             try testing.expectEqualStrings("#ff000080", hex);
         }
 
@@ -99,16 +99,16 @@ test "convert colors" {
                 {
                     const a, const b, const c, const d = col.toLinearRgb();
                     const x = Color(ft).fromLinearRgb(a, b, c, d);
-                    const col_hex = try col.toHexString(&buf);
-                    const x_hex = try x.toHexString(&buf);
+                    const col_hex = try col.toCssHex(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(col_hex, x_hex);
                 }
 
                 {
                     const a, const b, const c, const d = col.toOklab();
                     const x = Color(ft).fromOklab(a, b, c, d);
-                    const col_hex = try col.toHexString(&buf);
-                    const x_hex = try x.toHexString(&buf);
+                    const col_hex = try col.toCssHex(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(col_hex, x_hex);
                 }
             }
@@ -139,41 +139,41 @@ test "convert colors" {
         inline for (float_types) |ft| {
             for (data) |s| {
                 const col = try Color(ft).parse(s);
-                const hex = try col.toHexString(&buf);
+                const hex = try col.toCssHex(&buf);
                 try testing.expectEqualStrings(s, hex);
 
                 {
                     const a, const b, const c, const d = col.toRgba8();
                     const x = Color(ft).fromRgba8(a, b, c, d);
-                    const x_hex = try x.toHexString(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(s, x_hex);
                 }
 
                 {
                     const a, const b, const c, const d = col.toHsl();
                     const x = Color(ft).fromHsl(a, b, c, d);
-                    const x_hex = try x.toHexString(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(s, x_hex);
                 }
 
                 {
                     const a, const b, const c, const d = col.toHwb();
                     const x = Color(ft).fromHwb(a, b, c, d);
-                    const x_hex = try x.toHexString(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(s, x_hex);
                 }
 
                 {
                     const a, const b, const c, const d = col.toLinearRgb();
                     const x = Color(ft).fromLinearRgb(a, b, c, d);
-                    const x_hex = try x.toHexString(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(s, x_hex);
                 }
 
                 {
                     const a, const b, const c, const d = col.toOklab();
                     const x = Color(ft).fromOklab(a, b, c, d);
-                    const x_hex = try x.toHexString(&buf);
+                    const x_hex = try x.toCssHex(&buf);
                     try testing.expectEqualStrings(s, x_hex);
                 }
             }
