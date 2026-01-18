@@ -42,7 +42,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Setup Zig environment
-        uses: mlugg/setup-zig@v2.1.0
+        uses: mlugg/setup-zig@v2.2.0
         with:
           version: ${{ matrix.version }}
       - name: Build a project
@@ -59,7 +59,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Setup Zig environment
-        uses: mlugg/setup-zig@v2.1.0
+        uses: mlugg/setup-zig@v2.2.0
         with:
           version: "latest"
       - name: Run formatter in check mode
