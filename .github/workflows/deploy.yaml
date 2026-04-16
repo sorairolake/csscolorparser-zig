@@ -30,8 +30,6 @@ jobs:
         uses: actions/configure-pages@v6
       - name: Setup Zig environment
         uses: mlugg/setup-zig@v2.2.1
-        with:
-          version: "latest"
       - name: Build the documentation
         run: zig build doc --summary all
       - name: Minify the documentation

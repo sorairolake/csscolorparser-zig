@@ -24,9 +24,6 @@ jobs:
           - ubuntu
           - macos
           - windows
-        version-alias:
-          - minimum
-          - latest
         include:
           - os-alias: ubuntu
             os: ubuntu-24.04
@@ -34,17 +31,11 @@ jobs:
             os: macos-15
           - os-alias: windows
             os: windows-2025
-          - version-alias: minimum
-            version: "0.15.1"
-          - version-alias: latest
-            version: "latest"
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Setup Zig environment
         uses: mlugg/setup-zig@v2.2.1
-        with:
-          version: ${{ matrix.version }}
       - name: Build a project
         run: zig build --summary all
       - name: Build examples
@@ -60,8 +51,6 @@ jobs:
         uses: actions/checkout@v6
       - name: Setup Zig environment
         uses: mlugg/setup-zig@v2.2.1
-        with:
-          version: "latest"
       - name: Run formatter in check mode
         run: zig fmt --check .
 
