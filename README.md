@@ -47,6 +47,10 @@ exe.root_module.addImport("csscolorparser", csscolorparser.module("csscolorparse
 
 See the [documentation][docs-url] for more details.
 
+## Examples
+
+Please see the [examples] directory for examples of using this library.
+
 ## Zig version
 
 This library is compatible with Zig version 0.15.1.
@@ -98,6 +102,7 @@ licensing information.
 [oklab-oklch]: https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch
 [`color()`]: https://www.w3.org/TR/css-color-4/#color-function
 [docs-url]: https://sorairolake.github.io/csscolorparser-zig/
+[examples]: examples
 [CHANGELOG.adoc]: CHANGELOG.adoc
 [CONTRIBUTING.adoc]: CONTRIBUTING.adoc
 [`csscolorparser`]: https://crates.io/crates/csscolorparser
