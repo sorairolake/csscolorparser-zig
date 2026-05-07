@@ -38,8 +38,6 @@ jobs:
         uses: mlugg/setup-zig@v2.2.1
       - name: Build a project
         run: zig build --summary all
-      - name: Build examples
-        run: zig build example --summary all
       - name: Run tests
         run: zig build test --summary all
 

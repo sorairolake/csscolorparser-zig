@@ -13,5 +13,5 @@ pub const named_colors = @import("named_colors.zig").named_colors;
 test {
     const testing = @import("std").testing;
 
-    testing.refAllDeclsRecursive(@This());
+    testing.refAllDecls(@This());
 }

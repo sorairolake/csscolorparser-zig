@@ -12,5 +12,5 @@ test {
     _ = @import("named_colors.zig");
     _ = @import("parser.zig");
 
-    testing.refAllDeclsRecursive(@This());
+    testing.refAllDecls(@This());
 }

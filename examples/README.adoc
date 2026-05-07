@@ -1,9 +1,0 @@
-// SPDX-FileCopyrightText: 2025 Shun Sakai
-//
-// SPDX-License-Identifier: CC-BY-4.0
-
-= Examples
-
-link:parse.zig[]::
-
-  An example of parsing CSS color string.

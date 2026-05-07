@@ -19,6 +19,7 @@ project adheres to https://semver.org/[Semantic Versioning].
 === Changed
 
 * Rename `Color.toHexString` to `Color.toCssHex` ({pull-request-url}/18[#18])
+* Migrate to Zig version 0.16.0 ({pull-request-url}/50[#50])
 
 == {compare-url}/v0.1.0\...v0.2.0[0.2.0] - 2025-08-22
 

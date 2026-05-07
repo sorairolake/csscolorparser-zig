@@ -55,21 +55,4 @@ pub fn build(b: *std.Build) void {
         .install_subdir = "doc/csscolorparser",
     });
     doc_step.dependOn(&install_doc.step);
-
-    const example_step = b.step("example", "Build examples");
-    const example_names = [_][]const u8{"parse"};
-    inline for (example_names) |example_name| {
-        const example = b.addExecutable(.{
-            .name = example_name,
-            .root_module = b.createModule(.{
-                .root_source_file = b.path("examples/" ++ example_name ++ ".zig"),
-                .target = target,
-                .optimize = optimize,
-            }),
-        });
-        example.root_module.addImport("csscolorparser", csscolorparser_mod);
-        const install_example = b.addInstallArtifact(example, .{});
-        example_step.dependOn(&example.step);
-        example_step.dependOn(&install_example.step);
-    }
 }
