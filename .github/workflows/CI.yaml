@@ -33,7 +33,7 @@ jobs:
             os: windows-2025
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
       - name: Setup Zig environment
         uses: mlugg/setup-zig@v2.2.1
       - name: Build a project
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
       - name: Setup Zig environment
         uses: mlugg/setup-zig@v2.2.1
       - name: Run formatter in check mode
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
