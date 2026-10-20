@@ -49,7 +49,7 @@ See the [documentation][docs-url] for more details.
 
 ## Zig version
 
-This library is compatible with Zig version 0.16.0.
+This library is compatible with Zig version 0.17.0.
 
 ## Source code
 
