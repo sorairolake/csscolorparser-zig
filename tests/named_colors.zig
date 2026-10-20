@@ -28,7 +28,7 @@ test "named_colors" {
                     if (ascii.eqlIgnoreCase(name, nc))
                         continue :outer;
                 for (gray_list) |nc|
-                    if (ascii.indexOfIgnoreCase(name, nc) != null)
+                    if (ascii.findIgnoreCase(name, nc) != null)
                         continue :outer;
                 try testing.expectEqualStrings(name, c1.name().?);
 
@@ -204,7 +204,7 @@ test "named_colors" {
                     if (ascii.eqlIgnoreCase(td[0], nc))
                         continue :outer;
                 for (gray_list) |nc|
-                    if (ascii.indexOfIgnoreCase(td[0], nc) != null)
+                    if (ascii.findIgnoreCase(td[0], nc) != null)
                         continue :outer;
 
                 const c2 = try Color(ft).parse(td[1]);
@@ -389,7 +389,7 @@ test "named_colors" {
                     if (ascii.eqlIgnoreCase(td[1], nc))
                         continue :outer;
                 for (gray_list) |nc|
-                    if (ascii.indexOfIgnoreCase(td[1], nc) != null)
+                    if (ascii.findIgnoreCase(td[1], nc) != null)
                         continue :outer;
 
                 try testing.expectEqualStrings(td[1], c.name().?);

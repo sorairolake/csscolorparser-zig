@@ -403,7 +403,7 @@ pub fn Color(comptime T: type) type {
             if (ascii.startsWithIgnoreCase(lower, "#"))
                 return inner.parseHex(lower[1..]);
 
-            if (ascii.indexOfIgnoreCase(lower, "(")) |i| {
+            if (ascii.findIgnoreCase(lower, "(")) |i| {
                 if (ascii.endsWithIgnoreCase(lower, ")")) {
                     const fn_name = mem.trimEnd(u8, lower[0..i], &ascii.whitespace);
                     const s = lower[(i + 1)..(lower.len - 1)];
